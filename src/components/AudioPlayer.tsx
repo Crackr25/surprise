@@ -41,7 +41,7 @@ export default function AudioPlayer() {
         <div className="fixed bottom-6 right-6 z-50">
             <audio
                 ref={audioRef}
-                src="https://cdn.pixabay.com/download/audio/2022/10/25/audio_2207b19dc6.mp3?filename=romantic-piano-122944.mp3"
+                src="/background.mp3" // The user will place this in the public/ directory
                 loop
             />
 

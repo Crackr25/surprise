@@ -51,14 +51,32 @@ export default function PhotoGallery() {
                 // Create slight random rotations for cute polaroid effect
                 const randomRotation = index % 2 === 0 ? `rotate-${(index % 3) + 1}deg` : `-rotate-${(index % 3) + 1}deg`;
 
+                // Calculate some random values for continuous floating animation
+                const floatDuration = 4 + (index % 3) * 1.5; // Random duration between 4s, 5.5s, 7s
+                const floatDelay = (index % 4) * 0.5; // Staggered start
+
                 return (
                     <motion.div
                         key={img.url}
-                        initial={{ opacity: 0, y: 50 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.5, delay: index * 0.1 }}
-                        whileHover={{ scale: 1.05, rotate: 0, zIndex: 10 }}
-                        className={`bg-white p-4 pb-12 rounded-sm shadow-md transition-all duration-300 ${randomRotation}`}
+                        initial={{ opacity: 0, scale: 0.8, y: 100 }}
+                        animate={{
+                            opacity: 1,
+                            scale: 1,
+                            y: [0, -15, 0], // The continuous floating 
+                        }}
+                        transition={{
+                            opacity: { duration: 0.8, delay: index * 0.1 },
+                            scale: { duration: 0.8, delay: index * 0.1, type: "spring", bounce: 0.4 },
+                            y: {
+                                duration: floatDuration,
+                                delay: floatDelay,
+                                repeat: Infinity,
+                                repeatType: "mirror",
+                                ease: "easeInOut"
+                            }
+                        }}
+                        whileHover={{ scale: 1.1, rotate: 0, zIndex: 10, y: -20, transition: { duration: 0.3 } }}
+                        className={`bg-white p-4 pb-12 rounded-sm shadow-md transition-shadow duration-300 hover:shadow-2xl ${randomRotation}`}
                         style={{
                             transform: `rotate(${index % 2 === 0 ? (index % 3) + 2 : -((index % 3) + 2)}deg)`
                         }}
