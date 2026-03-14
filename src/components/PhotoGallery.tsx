@@ -59,14 +59,15 @@ export default function PhotoGallery() {
                     <motion.div
                         key={img.url}
                         initial={{ opacity: 0, scale: 0.8, y: 100 }}
-                        animate={{
+                        whileInView={{
                             opacity: 1,
                             scale: 1,
                             y: [0, -15, 0], // The continuous floating 
                         }}
+                        viewport={{ once: true, margin: "-50px" }}
                         transition={{
-                            opacity: { duration: 0.8, delay: index * 0.1 },
-                            scale: { duration: 0.8, delay: index * 0.1, type: "spring", bounce: 0.4 },
+                            opacity: { duration: 0.8, delay: (index % 3) * 0.2 },
+                            scale: { duration: 0.8, delay: (index % 3) * 0.2, type: "spring", bounce: 0.4 },
                             y: {
                                 duration: floatDuration,
                                 delay: floatDelay,
