@@ -47,10 +47,18 @@ export default function EnvelopeSurprise({ onOpen }: { onOpen: () => void }) {
                         transition={{ duration: 0.8, delay: 0.5 }}
                         className="w-full max-w-lg glass-panel p-6 sm:p-8 md:p-12 rounded-2xl shadow-2xl text-center"
                     >
-                        <h2 className="text-3xl sm:text-4xl font-cursive text-rose-500 mb-4 sm:mb-6">My Love...</h2>
-                        <p className="text-base sm:text-lg text-charcoal/80 leading-relaxed mb-6">
-                            You make every day brighter and my heart fuller. I put together these little memories for you, just to remind you how much you mean to me.
-                        </p>
+                        <h2 className="text-3xl sm:text-4xl font-cursive text-rose-500 mb-4 sm:mb-6">My Beautiful Girl...</h2>
+                        <div className="text-base sm:text-lg text-charcoal/80 leading-relaxed mb-6 space-y-4">
+                            <p>
+                                I just wanted to make something special for you, because you deserve the world.
+                            </p>
+                            <p>
+                                Every moment we spend together is precious to me. Thank you for being the most amazing, supportive, and absolutely gorgeous person I know.
+                            </p>
+                            <p className="font-medium text-rose-400">
+                                I love you so much! ❤️
+                            </p>
+                        </div>
                         <Heart className="w-8 h-8 text-rose-400 mx-auto" fill="currentColor" />
                     </motion.div>
                 )}

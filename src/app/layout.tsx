@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter, Dancing_Script } from "next/font/google";
 import "./globals.css";
+import "./animations.css";
 
 const inter = Inter({
   variable: "--font-inter",
