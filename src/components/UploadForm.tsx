@@ -4,58 +4,67 @@ import { useState, useRef } from "react";
 import { Upload, X, Loader2, Image as ImageIcon } from "lucide-react";
 
 export default function UploadForm({ onUploadSuccess }: { onUploadSuccess?: () => void }) {
-    const [file, setFile] = useState<File | null>(null);
-    const [preview, setPreview] = useState<string | null>(null);
+    const [files, setFiles] = useState<File[]>([]);
+    const [previews, setPreviews] = useState<string[]>([]);
     const [uploading, setUploading] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files.length > 0) {
-            const selectedFile = e.target.files[0];
-            setFile(selectedFile);
+            const selectedFiles = Array.from(e.target.files);
+            setFiles((prev) => [...prev, ...selectedFiles]);
 
-            // Create local preview
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                setPreview(reader.result as string);
-            };
-            reader.readAsDataURL(selectedFile);
+            // Create local previews
+            selectedFiles.forEach((file) => {
+                const reader = new FileReader();
+                reader.onloadend = () => {
+                    setPreviews((prev) => [...prev, reader.result as string]);
+                };
+                reader.readAsDataURL(file);
+            });
         }
     };
 
     const handleUpload = async () => {
-        if (!file) return;
+        if (files.length === 0) return;
 
         setUploading(true);
         try {
-            // Create a unique filename
-            const uniqueFilename = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.]/g, '')}`;
-
-            const response = await fetch(`/api/upload?filename=${uniqueFilename}`, {
-                method: "POST",
-                body: file, // Send file stream directly
+            // Upload all files concurrently
+            const uploadPromises = files.map(async (file) => {
+                const uniqueFilename = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.]/g, '')}`;
+                const response = await fetch(`/api/upload?filename=${uniqueFilename}`, {
+                    method: "POST",
+                    body: file,
+                });
+                if (!response.ok) throw new Error(`Upload failed for ${file.name}`);
+                return response;
             });
 
-            if (!response.ok) {
-                throw new Error("Upload failed");
-            }
+            await Promise.all(uploadPromises);
 
             // Reset form
-            setFile(null);
-            setPreview(null);
+            setFiles([]);
+            setPreviews([]);
             if (fileInputRef.current) {
                 fileInputRef.current.value = "";
             }
 
             if (onUploadSuccess) onUploadSuccess();
 
-            alert("Image uploaded successfully!");
+            alert(`Successfully uploaded ${files.length} images!`);
         } catch (error) {
             console.error(error);
-            alert("Failed to upload. Make sure you have set BLOB_READ_WRITE_TOKEN.");
+            alert("Failed to upload some images. Make sure you have set BLOB_READ_WRITE_TOKEN.");
         } finally {
             setUploading(false);
         }
+    };
+
+    const removeFile = (indexToRemove: number, e: React.MouseEvent) => {
+        e.stopPropagation();
+        setFiles(files.filter((_, i) => i !== indexToRemove));
+        setPreviews(previews.filter((_, i) => i !== indexToRemove));
     };
 
     return (
@@ -74,36 +83,37 @@ export default function UploadForm({ onUploadSuccess }: { onUploadSuccess?: () =
                     ref={fileInputRef}
                     onChange={handleFileChange}
                     accept="image/*"
+                    multiple // Added multiple attribute
                     className="hidden"
                 />
 
-                {preview ? (
-                    <div className="relative inline-block">
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src={preview} alt="Preview" className="max-h-48 rounded-lg shadow-md" />
-                        <button
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                setFile(null);
-                                setPreview(null);
-                            }}
-                            className="absolute -top-3 -right-3 bg-white p-1 rounded-full shadow-md text-gray-500 hover:text-red-500 transition-colors"
-                        >
-                            <X className="w-4 h-4" />
-                        </button>
+                {previews.length > 0 ? (
+                    <div className="flex flex-wrap gap-4 justify-center">
+                        {previews.map((preview, index) => (
+                            <div key={index} className="relative inline-block">
+                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                <img src={preview} alt={`Preview ${index}`} className="h-32 object-cover rounded-lg shadow-md" />
+                                <button
+                                    onClick={(e) => removeFile(index, e)}
+                                    className="absolute -top-3 -right-3 bg-white p-1 rounded-full shadow-md text-gray-500 hover:text-red-500 transition-colors z-10"
+                                >
+                                    <X className="w-4 h-4" />
+                                </button>
+                            </div>
+                        ))}
                     </div>
                 ) : (
                     <div className="flex flex-col items-center text-rose-400">
                         <ImageIcon className="w-12 h-12 mb-3 opacity-50" />
-                        <p className="font-medium text-rose-500">Click to select an image</p>
-                        <p className="text-sm mt-1 opacity-70">Supports JPG, PNG, WEBP</p>
+                        <p className="font-medium text-rose-500">Click to select images</p>
+                        <p className="text-sm mt-1 opacity-70">Supports JPG, PNG, WEBP (Multiple allowed)</p>
                     </div>
                 )}
             </div>
 
             <button
                 onClick={handleUpload}
-                disabled={!file || uploading}
+                disabled={files.length === 0 || uploading}
                 className="w-full bg-rose-500 text-white py-3 rounded-lg font-medium hover:bg-rose-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
             >
                 {uploading ? (
@@ -112,7 +122,7 @@ export default function UploadForm({ onUploadSuccess }: { onUploadSuccess?: () =
                         Uploading to Vercel...
                     </>
                 ) : (
-                    "Save Memory"
+                    `Save ${files.length > 0 ? files.length : ''} Memor${files.length === 1 ? 'y' : 'ies'}`
                 )}
             </button>
         </div>
