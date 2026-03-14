@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter, Dancing_Script } from "next/font/google";
 import "./globals.css";
 import "./animations.css";
+import AudioPlayer from "@/components/AudioPlayer";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -29,6 +30,7 @@ export default function RootLayout({
         className={`${inter.variable} ${dancingScript.variable} antialiased min-h-screen bg-blush selection:bg-rose-200 selection:text-charcoal`}
       >
         {children}
+        <AudioPlayer />
       </body>
     </html>
   );
